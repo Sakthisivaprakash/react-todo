@@ -6,7 +6,7 @@ import { Typography, Paper, Grid, Button } from "@mui/material";
 import { TodoList } from "../../components";
 import { STATUS } from "../../constants/todo-status";
 import { TodoContext } from "../../store/todo-context";
-// import { DragDropContext } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable } from "react-beautiful-dnd";
 
 const PaperColumn = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
@@ -48,6 +48,31 @@ const TodoMain: React.FC = () => {
     }
   }, [todoCtx]);
 
+  const handleDragend = (result: any) => {
+    console.log(result, "handleDragend");
+    const dragItemId = result.source.index;
+    switch (result.destination.droppableId) {
+      case "todoDropArea": {
+        todoCtx.updateTodoItem(dragItemId, {
+          status: STATUS.TODO,
+        });
+        break;
+      }
+      case "inProgressDropArea": {
+        todoCtx.updateTodoItem(dragItemId, {
+          status: STATUS.INPROGRESS,
+        });
+        break;
+      }
+      case "completedDropArea": {
+        todoCtx.updateTodoItem(dragItemId, {
+          status: STATUS.DONE,
+        });
+        break;
+      }
+    }
+  };
+
   return (
     <div style={{ height: "calc(100vh - 60px)" }}>
       <div className="d-flex justify-content-between">
@@ -62,36 +87,59 @@ const TodoMain: React.FC = () => {
           Create Task
         </Button>
       </div>
-      <Grid
-        container
-        spacing={2}
-        sx={{ height: "calc(100% - 60px)", marginTop: "20px" }}
-      >
-        <Grid item xs={2}>
-          <PaperColumn>
-            <Typography variant="h6" component="h6" className="pc-head">
-              ToDo
-            </Typography>
-            <TodoList todos={todoData} noDataPlaceHolder="No Todo task found" />
-          </PaperColumn>
+
+      <DragDropContext onDragEnd={handleDragend}>
+        <Grid
+          container
+          spacing={2}
+          sx={{ height: "calc(100% - 60px)", marginTop: "20px" }}
+        >
+          <Grid item xs={2}>
+            <Droppable droppableId="todoDropArea">
+              {(provided) => (
+                <PaperColumn ref={provided.innerRef}>
+                  <Typography variant="h6" component="h6" className="pc-head">
+                    ToDo
+                  </Typography>
+                  <TodoList
+                    dropProps={provided}
+                    todos={todoData}
+                    noDataPlaceHolder="No Todo task found"
+                  />
+                </PaperColumn>
+              )}
+            </Droppable>
+          </Grid>
+          <Grid item xs={2}>
+            <Droppable droppableId="inProgressDropArea">
+              {(provided, snapshot) => (
+                <PaperColumn ref={provided.innerRef}>
+                  <Typography variant="h6" component="h6" className="pc-head">
+                    In Progress
+                  </Typography>
+                  <TodoList
+                    dropProps={provided}
+                    todos={inProgressData}
+                    noDataPlaceHolder="No In-Progress task found"
+                  />
+                </PaperColumn>
+              )}
+            </Droppable>
+          </Grid>
+          <Grid item xs={2}>
+            <Droppable droppableId="completedDropArea">
+              {(provided) => (
+                <PaperColumn ref={provided.innerRef}>
+                  <Typography variant="h6" component="h6" className="pc-head">
+                    Done
+                  </Typography>
+                  <TodoList dropProps={provided} todos={completedData} />
+                </PaperColumn>
+              )}
+            </Droppable>
+          </Grid>
         </Grid>
-        <Grid item xs={2}>
-          <PaperColumn>
-            <Typography variant="h6" component="h6" className="pc-head">
-              In Progress
-            </Typography>
-            <TodoList todos={inProgressData} noDataPlaceHolder="No In-Progress task found" />
-          </PaperColumn>
-        </Grid>
-        <Grid item xs={2}>
-          <PaperColumn>
-            <Typography variant="h6" component="h6" className="pc-head">
-              Done
-            </Typography>
-            <TodoList todos={completedData} />
-          </PaperColumn>
-        </Grid>
-      </Grid>
+      </DragDropContext>
     </div>
   );
 };

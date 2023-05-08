@@ -3,9 +3,10 @@ import { styled } from "@mui/material/styles";
 import { Paper } from "@mui/material";
 import { TodoData } from "../../types/TodoData";
 import moment from "moment";
-import BorderColorIcon from '@mui/icons-material/BorderColor';
+import BorderColorIcon from "@mui/icons-material/BorderColor";
 import IconButton from "@mui/material/IconButton";
 import { useNavigate } from "react-router-dom";
+import { Draggable } from "react-beautiful-dnd";
 
 interface TodoCardProps {
   data: TodoData;
@@ -23,30 +24,40 @@ const Card = styled(Paper)(({ theme }) => ({
 }));
 
 const EditIcon = styled(IconButton)(() => ({
-    position: 'absolute',
-    right: '8px',
-    top: '8px'
-}))
-
+  position: "absolute",
+  right: "8px",
+  top: "8px",
+}));
 
 const TodoCard: React.FC<TodoCardProps> = ({ data }) => {
   const [showMore, setShowMore] = useState(false);
   const navigate = useNavigate();
   return (
-    <Card
-      onMouseEnter={() => setShowMore(true)}
-      onMouseLeave={() => setShowMore(false)}
-      data-testid="todo-container"
-    >
-      {showMore && (
-        <EditIcon data-testid="edit-button"  aria-label="more" onClick={() => navigate(`/detail/${data.id}`)}>
-          <BorderColorIcon style={{fontSize: '20px'}} />
-        </EditIcon>
+    <Draggable draggableId={`drag-${data.id}`} index={data.id}>
+      {(provided) => (
+        <Card
+          onMouseEnter={() => setShowMore(true)}
+          onMouseLeave={() => setShowMore(false)}
+          data-testid="todo-container"
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
+        >
+          {showMore && (
+            <EditIcon
+              data-testid="edit-button"
+              aria-label="more"
+              onClick={() => navigate(`/detail/${data.id}`)}
+            >
+              <BorderColorIcon style={{ fontSize: "20px" }} />
+            </EditIcon>
+          )}
+          <h4>{data.name}</h4>
+          <p>{data.description}</p>
+          <div>{moment(data.deadLine).format("MM-DD-YYYY")}</div>
+        </Card>
       )}
-      <h4>{data.name}</h4>
-      <p>{data.description}</p>
-      <div>{moment(data.deadLine).format("MM-DD-YYYY")}</div>
-    </Card>
+    </Draggable>
   );
 };
 
