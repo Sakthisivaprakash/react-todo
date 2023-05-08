@@ -39,7 +39,7 @@ const TodoCard: React.FC<TodoCardProps> = ({ data }) => {
       data-testid="todo-container"
     >
       {showMore && (
-        <EditIcon aria-label="more" onClick={() => navigate(`/detail/${data.id}`)}>
+        <EditIcon data-testid="edit-button"  aria-label="more" onClick={() => navigate(`/detail/${data.id}`)}>
           <BorderColorIcon style={{fontSize: '20px'}} />
         </EditIcon>
       )}
